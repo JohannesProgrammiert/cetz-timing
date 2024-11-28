@@ -207,30 +207,35 @@ The used layout is shown in @timing-layout.
   {
     set text(30pt) 
   context {
-    let unit = measure("X").width / 2.0
-  cetz.canvas(length: unit, {
+    let transition-width = 0.4
+    let xunit = 2.0
+    let amplitude = 2.0
+    let cetz-length = measure("X").width / xunit
+  cetz.canvas(length: cetz-length, {
     import cetz.draw: * 
 
     let spec0 = "4{HL}"
-    let (parsed0, diagram-length) = parse-sequence(spec0)
+    let (parsed0, num-ticks) = parse-sequence(spec0)
 
     let spec1 = "8C"
     let (parsed1, _) = parse-sequence(spec1)
 
-    let col-dist = unit * 1.4
-    let row-dist = calc.max(text.size, unit) * 1.4
-    line((0, -3), (0, (6)), stroke: (dash: "dashed", paint: gray))
-    line((2, -3), (2, (6)), stroke: (dash: "dashed", paint: gray))
-    line((-col-dist, -3), (-col-dist, (6)), stroke: (dash: "dashed", paint: gray))
+    let col-dist-pt = 1.4 * cetz-length
+    let row-dist-pt = calc.max(text.size, cetz-length) * 1.4
+    line((0, -3), (0, 6), stroke: (dash: "dashed", paint: gray))
+    line((xunit, -3), (xunit, 6), stroke: (dash: "dashed", paint: gray))
+    line((-col-dist-pt, -3), (-col-dist-pt, (6)), stroke: (dash: "dashed", paint: gray))
 
-    line((0, 1), (diagram-length * 2 + 1, 1), stroke: (dash: "dashed", paint: gray))
-    line((0, 0), (diagram-length * 2 + 1, 0), stroke: (dash: "dashed", paint: gray))
-    line((0, -1), (diagram-length * 2 + 1, -1), stroke: (dash: "dashed", paint: gray))
+    let xend = num-ticks * xunit + 1
 
-    line((0, -row-dist), (diagram-length * 2 + 1, -row-dist), stroke: (dash: "dashed", paint: gray))
+    line((0, amplitude / 2.0), (xend, amplitude / 2.0), stroke: (dash: "dashed", paint: gray))
+    line((0, 0), (xend, 0), stroke: (dash: "dashed", paint: gray))
+    line((0, -amplitude / 2.0), (xend, -amplitude / 2.0), stroke: (dash: "dashed", paint: gray))
 
-    line((6, -3), (6, (6)), stroke: (dash: "dashed", paint: gray))
-    line((6.4, -3), (6.4, (6)), stroke: (dash: "dashed", paint: gray))
+    line((0, -row-dist-pt), (xend, -row-dist-pt), stroke: (dash: "dashed", paint: gray))
+
+    line((3 * xunit, -3), (3 * xunit, (6)), stroke: (dash: "dashed", paint: gray))
+    line((3 * xunit + transition-width, -3), (3 * xunit + transition-width, (6)), stroke: (dash: "dashed", paint: gray))
 
     circle((0, 0),
       radius: (0.1), 
@@ -244,45 +249,47 @@ The used layout is shown in @timing-layout.
       [#text(size: 8pt, [origin])]
       )
 
-    content((-col-dist, -0 * row-dist), anchor: "mid-east", "First Row")
+    content((-col-dist-pt, 0), anchor: "mid-east", "First Row")
     draw-sequence(
       initchar: "L",
       origin: (x: 0, y: 0), 
       stroke: 1pt + black,
       parsed: parsed0,
-      diagram-length: diagram-length
+      num-ticks: num-ticks,
+      xunit: xunit,
+      amplitude: amplitude
       )
 
-    content((-col-dist, -1 * row-dist), anchor: "mid-east", "Second Row")
+    content((-col-dist-pt, -row-dist-pt), anchor: "mid-east", "Second Row")
     draw-sequence(
       initchar: "L",
-      origin: (x: 0, y: -row-dist / unit), 
+      origin: (x: 0, y: -row-dist-pt / cetz-length), 
       stroke: 1pt + black,
       parsed: parsed1,
-      diagram-length: diagram-length
+      num-ticks: num-ticks,
+      xunit: xunit,
+      amplitude: amplitude
       )
     set-style(mark: (symbol: ">", scale: 0.5, fill: black))
-    line((0, 5), (2, 5), name: "unit")
-    content("unit.mid", angle: 90deg, anchor: "west", padding: .4, [#text(size: 8pt, [2 CeTZ units])])
+    line((0, 5), (xunit, 5), name: "xunit")
+    content("xunit.mid", angle: 90deg, anchor: "west", padding: .4, [#text(size: 8pt, [xunit])])
 
-    line((-col-dist, 5), (0, 5), name: "coldist")
+    line((-col-dist-pt, 5), (0, 5), name: "coldist")
     content("coldist.mid", angle: 90deg, anchor: "west", padding: .4, [#text(size: 8pt, [col-dist])])
 
-    line((diagram-length * 2 + 1, 0), (diagram-length * 2 + 1, 1), name: "yunit0")
-    content("yunit0.mid", anchor: "west", padding: .4, [#text(size: 8pt, [1 CeTZ unit])])
+    line((xend, -amplitude / 2.0), (xend, amplitude / 2.0), name: "amplitude")
+    content("amplitude.mid", anchor: "west", padding: .4, [#text(size: 8pt, [amplitude])])
 
-    line((diagram-length * 2 + 1, 0), (diagram-length * 2 + 1, -1), name: "yunit1")
-    content("yunit1.mid", anchor: "west", padding: .4, [#text(size: 8pt, [1 CeTZ unit])])
 
-    line((diagram-length + 1, 0), (diagram-length + 1, -row-dist), name: "rowdist")
+    line((num-ticks + xunit / 2.0, 0), (num-ticks + xunit / 2.0, -row-dist-pt), name: "rowdist")
     content("rowdist.mid", anchor: "west", padding: .4, [#text(size: 8pt, [row-dist])])
 
-    line((6, 6), (6.4, 6), name: "trans")
+    line((3 * xunit, 5), (3 * xunit + transition-width, 5), name: "trans")
     content("trans.mid", anchor: "west", padding: .4, [#text(size: 8pt, [transition-width])])
   })
 
   }},
-  caption: [Distances and Nodes inside a `timingtable`]
+  caption: [Distances inside a `timingtable`]
 ) <timing-layout>
 
 = Available Commands
@@ -322,10 +329,10 @@ The used layout is shown in @timing-layout.
   ]
 ]
 
-#command("timingtable", arg(col-dist:10pt), arg(row-dist:auto), sarg[body])[
+#command("timingtable", arg(col-dist:10pt), arg(row-dist:auto), arg(xunit:2.0), arg(amplitude:2.0), sarg[body])[
   This macro draws a timing diagram table to a CeTZ canvas.
 
-  #argument("col-dist", types: length, default: 10pt)[
+  #argument("col-dist", types:"length", default: 10pt)[
     The distance between columns.
 
     *Example*
@@ -336,14 +343,14 @@ The used layout is shown in @timing-layout.
 
         *20 pt*
         ```
-        #timingtable(col-dist: 20pt,
+        #timingtable(col-dist: 20pt, show-grid: true,
           [Name], [HLLLH],
           [Clock], [10{C}],
           [Signal], [Z4DZ],
         )
         ```
 
-        #timingtable(col-dist: 20pt,
+        #timingtable(col-dist: 20pt, show-grid: true,
           [Name], [HLLLH],
           [Clock], [10{C}],
           [Signal], [Z4DZ],
@@ -352,14 +359,14 @@ The used layout is shown in @timing-layout.
      [
         *40 pt*
         ```
-        #timingtable(col-dist: 40pt,
+        #timingtable(col-dist: 40pt, show-grid: true,
           [Name], [HLLLH],
           [Clock], [10{C}],
           [Signal], [Z4DZ],
         )
         ```
 
-        #timingtable(col-dist: 40pt,
+        #timingtable(col-dist: 40pt, show-grid: true,
           [Name], [HLLLH],
           [Clock], [10{C}],
           [Signal], [Z4DZ],
@@ -367,7 +374,7 @@ The used layout is shown in @timing-layout.
      ]
     )
   ]
-  #argument("row-dist", types: length, default: auto)[
+  #argument("row-dist", types: "length", default: auto)[
     The distance between rows.
     
     *Example*
@@ -378,14 +385,14 @@ The used layout is shown in @timing-layout.
 
         *10 pt*
         ```
-        #timingtable(row-dist: 10pt,
+        #timingtable(row-dist: 10pt, show-grid: true,
           [Name], [HLLLH],
           [Clock], [10{C}],
           [Signal], [Z4DZ],
         )
         ```
 
-        #timingtable(row-dist: 10pt,
+        #timingtable(row-dist: 10pt, show-grid: true,
           [Name], [HLLLH],
           [Clock], [10{C}],
           [Signal], [Z4DZ],
@@ -394,14 +401,14 @@ The used layout is shown in @timing-layout.
      [
         *40 pt*
         ```
-        #timingtable(row-dist: 40pt,
+        #timingtable(row-dist: 40pt, show-grid: true,
           [Name], [HLLLH],
           [Clock], [10{C}],
           [Signal], [Z4DZ],
         )
         ```
 
-        #timingtable(row-dist: 40pt,
+        #timingtable(row-dist: 40pt, show-grid: true,
           [Name], [HLLLH],
           [Clock], [10{C}],
           [Signal], [Z4DZ],
@@ -409,8 +416,97 @@ The used layout is shown in @timing-layout.
      ]
     )
   ]
+
+  #argument("xunit", types: "float", default: 2.0)[
+    Number of CeTZ units per timing character.
+
+    *Example*
+
+    #grid(
+     columns: (40%, 40%), 
+     [
+
+        *1.0*
+        ```
+        #timingtable(xunit: 1.0, show-grid: true,
+          [Name], [HLLLH],
+          [Clock], [10{C}],
+          [Signal], [Z4DZ],
+        )
+        ```
+
+        #timingtable(xunit: 1.0, show-grid: true,
+          [Name], [HLLLH],
+          [Clock], [10{C}],
+          [Signal], [Z4DZ],
+        )
+     ], 
+     [
+        *3.2*
+        ```
+        #timingtable(xunit: 4.2, show-grid: true,
+          [Name], [HLLLH],
+          [Clock], [10{C}],
+          [Signal], [Z4DZ],
+        )
+        ```
+
+        #timingtable(xunit: 4.2, show-grid: true,
+          [Name], [HLLLH],
+          [Clock], [10{C}],
+          [Signal], [Z4DZ],
+        )
+     ]
+    )
+  ]
+
+  #argument("amplitude", types: "float", default:2.0)[
+    Signal aplitude (peak-to-peak) in CeTZ units.
+
+    The row distance is automatically adjusted.
+
+    *Example*
+
+    #grid(
+     columns: (40%, 40%), 
+     [
+
+        *1.0*
+        ```
+        #timingtable(amplitude: 1.0, show-grid: true,
+          [Name], [HLLLH],
+          [Clock], [10{C}],
+          [Signal], [Z4DZ],
+        )
+        ```
+
+        #timingtable(amplitude: 1.0, show-grid: true,
+          [Name], [HLLLH],
+          [Clock], [10{C}],
+          [Signal], [Z4DZ],
+        )
+     ], 
+     [
+        *3.2*
+        ```
+        #timingtable(amplitude: 4.2, show-grid: true,
+          [Name], [HLLLH],
+          [Clock], [10{C}],
+          [Signal], [Z4DZ],
+        )
+        ```
+
+        #timingtable(amplitude: 4.2, show-grid: true,
+          [Name], [HLLLH],
+          [Clock], [10{C}],
+          [Signal], [Z4DZ],
+        )
+     ]
+    )
+  ]
+
   #argument("body", is-sink: true)[
-    The captions and timing sequences to visualize.
+    Signal names and character sequences that describe the timing diagram.
   ]
 ]
 

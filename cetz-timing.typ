@@ -52,10 +52,10 @@
   }
 }
 
-#let from_data(pos, sig) = {
+#let from_data(pos, sig, amplitude: float) = {
   import cetz.draw: line
-  let trans_startA = (x: pos.x, y: pos.y - 1)
-  let trans_startB = (x: pos.x, y: pos.y + 1)
+  let trans_startA = (x: pos.x, y: pos.y - amplitude / 2.0)
+  let trans_startB = (x: pos.x, y: pos.y + amplitude / 2.0)
   let trans_end = (x: pos.x + transition-width.get() / 2, y: pos.y)
   if sig == "U" {
     /* TODO: fill pattern */
@@ -64,11 +64,11 @@
   line(trans_startB, trans_end)
 }
 
-#let to_data(pos, sig) = {
+#let to_data(pos, sig, amplitude: float) = {
   import cetz.draw: line
-  let trans_start = (x: pos.x + transition-width.get() / 2, y: pos.y)
-  let trans_endA = (x: pos.x + transition-width.get(), y: pos.y - 1)
-  let trans_endB = (x: pos.x + transition-width.get(), y: pos.y + 1)
+  let trans_start = (x: pos.x + transition-width.get() / 2.0, y: pos.y)
+  let trans_endA = (x: pos.x + transition-width.get(), y: pos.y - amplitude / 2.0)
+  let trans_endB = (x: pos.x + transition-width.get(), y: pos.y + amplitude / 2.0)
   if sig == "U" {
     /* TODO: fill pattern */
   }
@@ -80,12 +80,12 @@
   #place(line(start: (0%, 100%), end: (100%, 0%), stroke: 0.5pt)) 
 ]
 
-#let data(pos, sig, x_end: float) = {
+#let data(pos, sig, x_end: float, amplitude: float) = {
   import cetz.draw: line, rect
-  let sig_startA = (x: pos.x, y: pos.y + 1)
-  let sig_endA = (x: x_end, y: pos.y + 1)
-  let sig_startB = (x: pos.x, y: pos.y - 1)
-  let sig_endB = (x: x_end, y: pos.y - 1)
+  let sig_startA = (x: pos.x, y: pos.y + amplitude / 2.0)
+  let sig_endA = (x: x_end, y: pos.y + amplitude / 2.0)
+  let sig_startB = (x: pos.x, y: pos.y - amplitude / 2.0)
+  let sig_endB = (x: x_end, y: pos.y - amplitude / 2.0)
   if sig == "U" {
     rect(sig_startA, sig_endB, stroke: none, fill: pat)
   }
@@ -96,34 +96,34 @@
   line(sig_startB, sig_endB)
 }
 
-#let from_sig(pos, sig, instant: bool) = {
+#let from_sig(pos, sig, instant: bool, amplitude: float) = {
   import cetz.draw: line
   // resolve transition width
   let width = if instant { 0 } else { transition-width.get() }
-  let trans_start = (x: pos.x, y: pos.y + sig-info.at(sig).level)
-  let trans_end = (x: pos.x + width / 2, y: pos.y)
+  let trans_start = (x: pos.x, y: pos.y + sig-info.at(sig).level * amplitude / 2.0)
+  let trans_end = (x: pos.x + width / 2.0, y: pos.y)
   line(trans_start, trans_end)
 }
 
-#let to_sig(pos, sig, instant: bool) = {
+#let to_sig(pos, sig, instant: bool, amplitude: float) = {
   import cetz.draw: line
   // resolve transition width
   let width = if instant { 0 } else { transition-width.get() }
   let trans_start = (x: pos.x + width / 2, y: pos.y)
-  let trans_end = (x: pos.x + width, y: pos.y + sig-info.at(sig).level)
+  let trans_end = (x: pos.x + width, y: pos.y + sig-info.at(sig).level * amplitude / 2.0)
   line(trans_start, trans_end)
 }
 
-#let sig(pos, sig, x_end: float) = {
+#let sig(pos, sig, x_end: float, amplitude: float) = {
   import cetz.draw: line
-  let sig_start = (x: pos.x, y: pos.y + sig-info.at(sig).level)
-  let sig_end = (x: x_end, y: pos.y + sig-info.at(sig).level)
+  let sig_start = (x: pos.x, y: pos.y + sig-info.at(sig).level * amplitude / 2.0)
+  let sig_end = (x: x_end, y: pos.y + sig-info.at(sig).level * amplitude / 2.0)
   if sig == "M" {
 
     // zick zack repetitions
     let rep = 4
     // zick zack amplitude
-    let amp = 0.4
+    let amp = amplitude * 0.4
     // length of one zick zack repetition
     let rep_len = (x_end - pos.x) / rep
     // length of one zick zack element
@@ -134,12 +134,12 @@
       // draw zick zack
       line(
         (x: x_start, y: sig_start.y), 
-        (x: x_start + seg_len, y: sig_start.y + amp))
+        (x: x_start + seg_len, y: sig_start.y + amp / 2.0))
       line(
-        (x: x_start + seg_len, y: sig_start.y + amp), 
-        (x: x_start + 3 * seg_len, y: sig_start.y - amp))
+        (x: x_start + seg_len, y: sig_start.y + amp / 2.0), 
+        (x: x_start + 3 * seg_len, y: sig_start.y - amp / 2.0))
       line(
-        (x: x_start + 3 * seg_len, y: sig_start.y - amp), 
+        (x: x_start + 3 * seg_len, y: sig_start.y - amp / 2.0), 
         (x: x_start + 4 * seg_len, y: sig_end.y))
     }
   }
@@ -164,7 +164,7 @@
   let parsed = ""
 
   // length of the diagram, exluding command chars like '|'
-  let diagram-length = 0
+  let num-ticks = 0
 
   // How often to repeat the next timing character
   // Examples that show different ways to specify the next repetition are 
@@ -208,7 +208,7 @@
       else {
         parsed += c
         if c != "|" {
-          diagram-length += 1
+          num-ticks += 1
         }
       }
     }
@@ -226,7 +226,7 @@
           rep = "1"
           for i in range(rep_num) {
             parsed += parsed-group.at(0)
-            diagram-length += parsed-group.at(1)
+            num-ticks += parsed-group.at(1)
           }
         }
         else {
@@ -253,7 +253,7 @@
         for i in range(rep_num) {
           parsed += c
           if c != "|" {
-            diagram-length += 1
+            num-ticks += 1
           }
         }
       }
@@ -267,13 +267,13 @@
   }
 
   assert(nesting-level == 0, message: "Unclosed bracket in sequence " + sequence);
-  return (parsed, diagram-length)
+  return (parsed, num-ticks)
 }
 
-#let draw-sequence(origin: (x: 0, y: 0), initchar: none, stroke: stroke, parsed: array, diagram-length: int) = {
+#let draw-sequence(origin: (x: 0, y: 0), initchar: none, stroke: stroke, parsed: array, num-ticks: int, xunit: 2.0, amplitude: 1.0) = {
   import cetz.draw: set-style, rect
   // Must always draw invisible rect to allocate canvas space
-  rect((origin.x, origin.y - 1), (origin.x + diagram-length * 2, origin.y + 1), stroke: none)
+  rect((origin.x, origin.y - amplitude / 2.0), (origin.x + num-ticks * xunit, origin.y + amplitude / 2.0), stroke: none)
 
   // Resolve toggle commands
   let previous = initchar
@@ -305,20 +305,20 @@
     }
     let col = resolve_color(c: c, color: stroke.paint)
     set-style(stroke: stroke.thickness + col)
-    let pos = (x: origin.x + tick, y: origin.y)
+    let pos = (x: origin.x + tick * xunit, y: origin.y)
     let sig_pos = pos
     if c != previous or explicit-transition {
       if is_sig(previous) {
-        from_sig(pos, previous, instant: instant)
+        from_sig(pos, previous, instant: instant, amplitude: amplitude)
       }
       else if is_data(previous) {
-        from_data(pos, previous)
+        from_data(pos, previous, amplitude: amplitude)
       }
       if is_sig(c) {
-        to_sig(pos, c, instant: instant)
+        to_sig(pos, c, instant: instant, amplitude: amplitude)
       }
       else if is_data(c){
-        to_data(pos, c)
+        to_data(pos, c, amplitude: amplitude)
       }
       if not instant {
         sig_pos.x += transition-width.get()
@@ -328,32 +328,44 @@
       sig(
         sig_pos,
         c,
-        x_end: pos.x + 2, 
+        x_end: pos.x + xunit, 
+        amplitude: amplitude
       )
     }
     else if is_data(c) {
       data(
         sig_pos,
         c, 
-        x_end: pos.x + 2,
+        x_end: pos.x + xunit,
+        amplitude: amplitude
       )
     }
     previous = c
-    tick += 2
+    tick += 1
     explicit-transition = false
   }
 }
 
 #let texttiming(strok: black + 1pt, initchar: none, draw-grid: false, sequence) = {
-  let (parsed, diagram-length) = parse-sequence(sequence)
-  if diagram-length == 0 {
+  let (parsed, diagram-ticks) = parse-sequence(sequence)
+  if diagram-ticks == 0 {
     return
   }
   context{
-    let unit = measure("X").height / 2.0
+    // cetz-units per character.
+    let xunit = 2.0
+
+    // Signal amplitude
+    let amplitude = 2.0
+
+    // Length of one cetz-unit. 
+    // Normalized to xunit to make sure signal edges are 
+    // always at full cetz-units.
+    let cetz-length = measure("X").height / xunit
+
     import cetz.draw: *
     box()[
-    #cetz.canvas(padding: 0, length: unit,
+    #cetz.canvas(padding: 0, length: cetz-length,
       {
         // Draw background grid
         //
@@ -362,14 +374,16 @@
         //
         // If draw-grid is turned off, we set transparency to 100%.
         if draw-grid {
-          grid((0, -1), (diagram-length * 2, 1), stroke: gray.transparentize(20%))
+          grid((0, -amplitude / 2.0), (diagram-ticks * xunit, amplitude / 2.0), stroke: gray.transparentize(20%))
         }
 
         draw-sequence(
           initchar: initchar,
           stroke: strok,
           parsed: parsed,
-          diagram-length: diagram-length
+          num-ticks: diagram-ticks,
+          amplitude: amplitude,
+          xunit: xunit
           )
       }
     )
@@ -380,12 +394,15 @@
 #let timingtable(
   row-dist: auto,
   col-dist: 10pt,
+  xunit: 2.0,
+  amplitude: 2.0,
+  show-grid: false,
   ..body) = {
     context {
     let args = ()
     let i = 0
     let row = ("name": none, "sequence": none)
-    let max-signal-width = 0
+    let max-ticks = 0
     for arg in body.pos() {
       if calc.rem(i, 2) == 0 {
         if i > 0 {
@@ -395,21 +412,23 @@
       }
       else {
         row.at("sequence") = parse-sequence(arg.text)
-        let width = row.at("sequence").at(1) * 2
-        if width > max-signal-width {
-          max-signal-width = width
+        let ticks = row.at("sequence").at(1)
+        if ticks > max-ticks {
+          max-ticks = ticks
         }
       }
       i += 1
     }
     args.push(row)
-    // CeTZ unit
-    let unit = measure("X").height / 2.0
+
+    // CeTZ unit length
+    let length = measure("X").height / xunit
+
 
     // Calculate row distance based on text height or user input
     let rowdist-pt = if row-dist == auto {
       // auto selection
-      calc.max(text.size, unit) * 1.4
+      calc.max(text.size, length * amplitude) * 1.4
     }
     else {
       // user input
@@ -417,20 +436,24 @@
     }
 
     // Convert pixel distance to CeTZ unit
-    let rowdist = rowdist-pt / unit
+    let rowdist = rowdist-pt / length
 
-    cetz.canvas(length: unit, {
+    cetz.canvas(length: length, {
       import cetz.draw: *
-      // grid((0, 1), (max-signal-width, -args.len() * rowdist + 1), stroke: gray) 
+      if show-grid {
+        grid((0, amplitude / 2.0), (max-ticks * xunit, -(args.len() - 1) * rowdist - amplitude / 2.0), stroke: gray) 
+      }
       let row = 0
       for arg in args {
         content((-col-dist, -row * rowdist), anchor: "mid-east", arg.name)
-        let (parsed, diagram-length) = arg.sequence
+        let (parsed, num-ticks) = arg.sequence
         draw-sequence(
           origin: (x: 0, y: -row * rowdist), 
           stroke: 1pt + black,
           parsed: parsed,
-          diagram-length: diagram-length
+          num-ticks: num-ticks,
+          xunit: xunit,
+          amplitude: amplitude
           )
         row += 1
       }
