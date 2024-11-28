@@ -1,6 +1,6 @@
 #import "@preview/mantys:0.1.4": *
 #import "@preview/cetz:0.3.1"
-#import "./cetz-timing.typ": texttiming, timingtable, draw-sequence, parse-sequence
+#import "./cetz-timing.typ": texttiming, timingtable, wave, parse-sequence
 
 #let package = toml("typst.toml").package
 
@@ -250,25 +250,20 @@ The used layout is shown in @timing-layout.
       )
 
     content((-col-dist-pt, 0), anchor: "mid-east", "First Row")
-    draw-sequence(
+    wave(
       initchar: "L",
-      origin: (x: 0, y: 0), 
-      stroke: 1pt + black,
-      parsed: parsed0,
-      num-ticks: num-ticks,
       xunit: xunit,
-      amplitude: amplitude
+      amplitude: amplitude,
+      spec0
       )
 
     content((-col-dist-pt, -row-dist-pt), anchor: "mid-east", "Second Row")
-    draw-sequence(
+    wave(
       initchar: "L",
       origin: (x: 0, y: -row-dist-pt / cetz-length), 
-      stroke: 1pt + black,
-      parsed: parsed1,
-      num-ticks: num-ticks,
       xunit: xunit,
-      amplitude: amplitude
+      amplitude: amplitude,
+      spec1
       )
     set-style(mark: (symbol: ">", scale: 0.5, fill: black))
     line((0, 5), (xunit, 5), name: "xunit")
@@ -329,7 +324,7 @@ The used layout is shown in @timing-layout.
   ]
 ]
 
-#command("timingtable", arg(col-dist:10pt), arg(row-dist:auto), arg(xunit:2.0), arg(amplitude:2.0), sarg[body])[
+#command("timingtable", arg(col-dist:10pt), arg(row-dist:auto), arg(xunit:2.0), arg(amplitude:2.0), arg(draw-grid:false), sarg[body])[
   This macro draws a timing diagram table to a CeTZ canvas.
 
   #argument("col-dist", types:"length", default: 10pt)[
@@ -342,7 +337,7 @@ The used layout is shown in @timing-layout.
      [
 
         *20 pt*
-        ```
+        ```typst
         #timingtable(col-dist: 20pt, show-grid: true,
           [Name], [HLLLH],
           [Clock], [10{C}],
@@ -358,7 +353,7 @@ The used layout is shown in @timing-layout.
      ], 
      [
         *40 pt*
-        ```
+        ```typst
         #timingtable(col-dist: 40pt, show-grid: true,
           [Name], [HLLLH],
           [Clock], [10{C}],
@@ -384,7 +379,7 @@ The used layout is shown in @timing-layout.
      [
 
         *10 pt*
-        ```
+        ```typst
         #timingtable(row-dist: 10pt, show-grid: true,
           [Name], [HLLLH],
           [Clock], [10{C}],
@@ -400,7 +395,7 @@ The used layout is shown in @timing-layout.
      ], 
      [
         *40 pt*
-        ```
+        ```typst
         #timingtable(row-dist: 40pt, show-grid: true,
           [Name], [HLLLH],
           [Clock], [10{C}],
@@ -427,7 +422,7 @@ The used layout is shown in @timing-layout.
      [
 
         *1.0*
-        ```
+        ```typst
         #timingtable(xunit: 1.0, show-grid: true,
           [Name], [HLLLH],
           [Clock], [10{C}],
@@ -443,7 +438,7 @@ The used layout is shown in @timing-layout.
      ], 
      [
         *3.2*
-        ```
+        ```typst
         #timingtable(xunit: 4.2, show-grid: true,
           [Name], [HLLLH],
           [Clock], [10{C}],
@@ -472,7 +467,7 @@ The used layout is shown in @timing-layout.
      [
 
         *1.0*
-        ```
+        ```typst
         #timingtable(amplitude: 1.0, show-grid: true,
           [Name], [HLLLH],
           [Clock], [10{C}],
@@ -488,7 +483,7 @@ The used layout is shown in @timing-layout.
      ], 
      [
         *3.2*
-        ```
+        ```typst
         #timingtable(amplitude: 4.2, show-grid: true,
           [Name], [HLLLH],
           [Clock], [10{C}],
@@ -507,6 +502,73 @@ The used layout is shown in @timing-layout.
 
   #argument("body", is-sink: true)[
     Signal names and character sequences that describe the timing diagram.
+  ]
+]
+
+#command("wave", arg(origin: (x: 0, y: 0)), arg(initchar:none), arg(stroke:1pt + black), arg(xunit:2.0), arg(amplitude:2.0), arg[sequence])[
+  Draw wave specified by character sequence in cetz.canvas context.
+
+  *Example*
+
+  ```typst
+  #cetz.canvas({
+    import cetz.draw: *
+
+    grid((0, 1), (10, -3), stroke: gray)
+
+    circle((0, 0), radius: 0.1, fill: black, name: "origin")
+    content("origin", anchor: "east", padding: .3, [signal 0, origin])
+    wave("XHHLX") 
+
+    circle((0, -2), radius: 0.1, fill: black, name: "sig1")
+    content("sig1", anchor: "east", padding: .3, [signal 1])
+    wave(origin: (x: 0, y: -2), "UD|DUU") 
+
+    for i in range(6) {
+      content((i * 2, -3.2), [#i])
+    }
+  })
+  ```
+
+  #cetz.canvas({
+    import cetz.draw: *
+
+    grid((0, 1), (10, -3), stroke: gray)
+
+    circle((0, 0), radius: 0.1, fill: black, name: "origin")
+    content("origin", anchor: "east", padding: .3, [signal 0, origin])
+    wave("XHHLX") 
+
+    circle((0, -2), radius: 0.1, fill: black, name: "sig1")
+    content("sig1", anchor: "east", padding: .3, [signal 1])
+    wave(origin: (x: 0, y: -2), "UD|DUU") 
+
+    for i in range(6) {
+      content((i * 2, -3.2), [#i])
+    }
+  })
+
+  #argument("origin", types:"dict", default: (x: 0, y: 0))[
+    A dictionary that specifies the origin position on the CeTZ canvas. 
+  ]
+
+  #argument("initchar", types:"str", default: none)[
+    Initial logical level. This is used to draw a transition right at the beginning. It must be `none` or one of the logic levels.
+  ]
+
+  #argument("stroke", types:"stroke", default: 1pt + black)[
+    Stroke of the wave.
+  ]
+
+  #argument("xunit", types:"float", default: 2.0)[
+    Size of one character in the sequence in CeTZ coordinate space.
+  ]
+
+  #argument("amplitude", types:"float", default: 2.0)[
+    Size of the peak-to-peak amplitude in CeTZ coordinate space.
+  ]
+  #argument("sequence", types:"str")[
+    The character sequence to visualize.
   ]
 ]
 

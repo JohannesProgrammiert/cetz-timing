@@ -2,7 +2,7 @@
 
 /// Width used for transition between different signal levels.
 /// Value between 0.0 and 2.0
-#let transition-width = state("transition-width", 0.4)
+#let transition-width = 0.4 
 
 #let sig-info = (
   "L": (
@@ -56,7 +56,7 @@
   import cetz.draw: line
   let trans_startA = (x: pos.x, y: pos.y - amplitude / 2.0)
   let trans_startB = (x: pos.x, y: pos.y + amplitude / 2.0)
-  let trans_end = (x: pos.x + transition-width.get() / 2, y: pos.y)
+  let trans_end = (x: pos.x + transition-width / 2, y: pos.y)
   if sig == "U" {
     /* TODO: fill pattern */
   }
@@ -66,9 +66,9 @@
 
 #let to_data(pos, sig, amplitude: float) = {
   import cetz.draw: line
-  let trans_start = (x: pos.x + transition-width.get() / 2.0, y: pos.y)
-  let trans_endA = (x: pos.x + transition-width.get(), y: pos.y - amplitude / 2.0)
-  let trans_endB = (x: pos.x + transition-width.get(), y: pos.y + amplitude / 2.0)
+  let trans_start = (x: pos.x + transition-width / 2.0, y: pos.y)
+  let trans_endA = (x: pos.x + transition-width, y: pos.y - amplitude / 2.0)
+  let trans_endB = (x: pos.x + transition-width, y: pos.y + amplitude / 2.0)
   if sig == "U" {
     /* TODO: fill pattern */
   }
@@ -77,7 +77,7 @@
 }
 
 #let pat = pattern(size: (2pt, 3pt))[
-  #place(line(start: (0%, 100%), end: (100%, 0%), stroke: 0.5pt)) 
+  #place(line(start: (0%, 100%), end: (100%, 0%), stroke: 0.5pt))
 ]
 
 #let data(pos, sig, x_end: float, amplitude: float) = {
@@ -99,7 +99,7 @@
 #let from_sig(pos, sig, instant: bool, amplitude: float) = {
   import cetz.draw: line
   // resolve transition width
-  let width = if instant { 0 } else { transition-width.get() }
+  let width = if instant { 0 } else { transition-width }
   let trans_start = (x: pos.x, y: pos.y + sig-info.at(sig).level * amplitude / 2.0)
   let trans_end = (x: pos.x + width / 2.0, y: pos.y)
   line(trans_start, trans_end)
@@ -108,7 +108,7 @@
 #let to_sig(pos, sig, instant: bool, amplitude: float) = {
   import cetz.draw: line
   // resolve transition width
-  let width = if instant { 0 } else { transition-width.get() }
+  let width = if instant { 0 } else { transition-width }
   let trans_start = (x: pos.x + width / 2, y: pos.y)
   let trans_end = (x: pos.x + width, y: pos.y + sig-info.at(sig).level * amplitude / 2.0)
   line(trans_start, trans_end)
@@ -133,13 +133,13 @@
       let x_start = sig_start.x + i * rep_len
       // draw zick zack
       line(
-        (x: x_start, y: sig_start.y), 
+        (x: x_start, y: sig_start.y),
         (x: x_start + seg_len, y: sig_start.y + amp / 2.0))
       line(
-        (x: x_start + seg_len, y: sig_start.y + amp / 2.0), 
+        (x: x_start + seg_len, y: sig_start.y + amp / 2.0),
         (x: x_start + 3 * seg_len, y: sig_start.y - amp / 2.0))
       line(
-        (x: x_start + 3 * seg_len, y: sig_start.y - amp / 2.0), 
+        (x: x_start + 3 * seg_len, y: sig_start.y - amp / 2.0),
         (x: x_start + 4 * seg_len, y: sig_end.y))
     }
   }
@@ -167,7 +167,7 @@
   let num-ticks = 0
 
   // How often to repeat the next timing character
-  // Examples that show different ways to specify the next repetition are 
+  // Examples that show different ways to specify the next repetition are
   // '11H', '11.H', '11.11H', '.11H'
   let rep = "1"
 
@@ -186,7 +186,7 @@
   // Capture sub group
   let state-group-capture = 1
 
-  // Capture repetition prefix 
+  // Capture repetition prefix
   let state-rep-capture = 2
 
   // current state
@@ -195,7 +195,7 @@
   for c in sequence {
     if state == state-timing-capture {
       if c == "{" {
-        state = state-group-capture 
+        state = state-group-capture
         group = ""
       }
       else if c == "}" {
@@ -258,9 +258,9 @@
         }
       }
       else {
-        rep += c 
+        rep += c
       }
-    } 
+    }
     else {
       panic("Invalid parser state")
     }
@@ -270,8 +270,16 @@
   return (parsed, num-ticks)
 }
 
-#let draw-sequence(origin: (x: 0, y: 0), initchar: none, stroke: stroke, parsed: array, num-ticks: int, xunit: 2.0, amplitude: 1.0) = {
+#let wave(
+  origin: (x: 0, y: 0),
+  initchar: none,
+  stroke: 1pt + black,
+  xunit: 2.0,
+  amplitude: 1.0,
+  sequence
+) = {
   import cetz.draw: set-style, rect
+  let (parsed, num-ticks) = parse-sequence(sequence)
   // Must always draw invisible rect to allocate canvas space
   rect((origin.x, origin.y - amplitude / 2.0), (origin.x + num-ticks * xunit, origin.y + amplitude / 2.0), stroke: none)
 
@@ -321,21 +329,21 @@
         to_data(pos, c, amplitude: amplitude)
       }
       if not instant {
-        sig_pos.x += transition-width.get()
+        sig_pos.x += transition-width
       }
     }
     if is_sig(c) {
       sig(
         sig_pos,
         c,
-        x_end: pos.x + xunit, 
+        x_end: pos.x + xunit,
         amplitude: amplitude
       )
     }
     else if is_data(c) {
       data(
         sig_pos,
-        c, 
+        c,
         x_end: pos.x + xunit,
         amplitude: amplitude
       )
@@ -347,7 +355,7 @@
 }
 
 #let texttiming(strok: black + 1pt, initchar: none, draw-grid: false, sequence) = {
-  let (parsed, diagram-ticks) = parse-sequence(sequence)
+  let (_, diagram-ticks) = parse-sequence(sequence)
   if diagram-ticks == 0 {
     return
   }
@@ -358,8 +366,8 @@
     // Signal amplitude
     let amplitude = 2.0
 
-    // Length of one cetz-unit. 
-    // Normalized to xunit to make sure signal edges are 
+    // Length of one cetz-unit.
+    // Normalized to xunit to make sure signal edges are
     // always at full cetz-units.
     let cetz-length = measure("X").height / xunit
 
@@ -369,7 +377,7 @@
       {
         // Draw background grid
         //
-        // It must always be drawn so signals always have the correct 
+        // It must always be drawn so signals always have the correct
         // relative position.
         //
         // If draw-grid is turned off, we set transparency to 100%.
@@ -377,13 +385,12 @@
           grid((0, -amplitude / 2.0), (diagram-ticks * xunit, amplitude / 2.0), stroke: gray.transparentize(20%))
         }
 
-        draw-sequence(
+        wave(
           initchar: initchar,
           stroke: strok,
-          parsed: parsed,
-          num-ticks: diagram-ticks,
           amplitude: amplitude,
-          xunit: xunit
+          xunit: xunit,
+          sequence
           )
       }
     )
@@ -401,7 +408,12 @@
     context {
     let args = ()
     let i = 0
-    let row = ("name": none, "sequence": none)
+    let row = (
+      "name": none,
+      "sequence": none,
+      "parsed": none,
+      "ticks": none
+      )
     let max-ticks = 0
     for arg in body.pos() {
       if calc.rem(i, 2) == 0 {
@@ -411,8 +423,10 @@
         row.at("name") = arg
       }
       else {
-        row.at("sequence") = parse-sequence(arg.text)
-        let ticks = row.at("sequence").at(1)
+        row.at("sequence") = arg.text
+        let (parsed, ticks) = parse-sequence(arg.text)
+        row.at("parsed") = parsed
+        row.at("ticks") = ticks
         if ticks > max-ticks {
           max-ticks = ticks
         }
@@ -441,19 +455,17 @@
     cetz.canvas(length: length, {
       import cetz.draw: *
       if show-grid {
-        grid((0, amplitude / 2.0), (max-ticks * xunit, -(args.len() - 1) * rowdist - amplitude / 2.0), stroke: gray) 
+        grid((0, amplitude / 2.0), (max-ticks * xunit, -(args.len() - 1) * rowdist - amplitude / 2.0), stroke: gray)
       }
       let row = 0
       for arg in args {
         content((-col-dist, -row * rowdist), anchor: "mid-east", arg.name)
-        let (parsed, num-ticks) = arg.sequence
-        draw-sequence(
-          origin: (x: 0, y: -row * rowdist), 
+        wave(
+          origin: (x: 0, y: -row * rowdist),
           stroke: 1pt + black,
-          parsed: parsed,
-          num-ticks: num-ticks,
           xunit: xunit,
-          amplitude: amplitude
+          amplitude: amplitude,
+          arg.sequence
           )
         row += 1
       }
