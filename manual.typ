@@ -2,12 +2,14 @@
 #import "@preview/cetz:0.3.1"
 #import "./cetz-timing.typ": texttiming, timingtable, draw-sequence, parse-sequence
 
+#let package = toml("typst.toml").package
+
 #show: mantys.with(
-  name: "cetz-timing",
-  title: "cetz-timing",
-  subtitle: "A Typst Package for Timing Diagrams",
-  authors: "Johannes Schiffer",
-  version: "0.1.0",
+  name: package.name,
+  title: package.name,
+  subtitle: package.description,
+  authors: package.authors,
+  version: package.version,
   date: datetime.today(),
 )
 
