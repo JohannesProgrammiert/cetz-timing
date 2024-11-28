@@ -30,7 +30,7 @@ This package uses CeTZ to produce timing diagrams inside text./* */
 It is a port of `tikz-timing` by Martin Scharrer to Typst.
 
 The signal levels of the timing diagram can be given by corresponding characters/letters like '`H`' for _Logical High_
-or '`L`' for _Logical Low_. So e.g. '`{HLZXD}`' gives '#texttiming("HLZXD")'. In order to fit (in)to normal text size the diagram size (i.e. its height, width and line width) is defined relatively to the size of the character 'A' in the current context.
+or '`L`' for _Logical Low_. So e.g. '`HLZXD`' gives '#texttiming("HLZXD")'. In order to fit (in)to normal text size the diagram size (i.e. its height, width and line width) is defined relatively to the size of the character 'A' in the current context.
 
 This way the diagram can also be scaled width the font size. (Example: #text(size: 8pt, [Hello #texttiming("HLZXD")]), #text(size: 14pt, [Hello #texttiming("HLZXD")])).
 A single timing character produces a diagram width a width identical to its height ('`H`' $->$ '#texttiming("H")'). Longer diagrams can be produced by either using the same character multiple times ('`HHH`' $->$ '#texttiming("HHH")') or writing the width as number in front of the character ('`3H`' $->$ '#texttiming("3H")')/* */.
