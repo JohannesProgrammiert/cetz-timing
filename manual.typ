@@ -430,3 +430,15 @@ The used layout is shown in @timing-layout.
 - [_Optional_] Correct `strok` argument.
 - [_Optional_] Resolve `mantys` warnings.
 - [_Optional_] Allow non-integer lengths for logic levels.
+
+= Examples
+
+I am an inline timing diagram: '#texttiming("HL3{CX}2Z")'.
+
+I am a basic timing diagram with multiple rows:
+
+#timingtable(
+  [Clock], [6{C}],
+  [Chip Select], [H4LH],
+  [Data], [U4DU],
+)
