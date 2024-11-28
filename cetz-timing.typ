@@ -385,21 +385,15 @@
     let args = ()
     let i = 0
     let row = ("name": none, "sequence": none)
-    let max-name-width-pt = 0pt
     let max-signal-width = 0
     for arg in body.pos() {
       if calc.rem(i, 2) == 0 {
         if i > 0 {
           args.push(row)
         }
-        let width = measure(arg).width
-        if width > max-name-width-pt {
-          max-name-width-pt = width
-        }
         row.at("name") = arg
       }
       else {
-        let diag = texttiming(arg.text)
         row.at("sequence") = parse-sequence(arg.text)
         let width = row.at("sequence").at(1) * 2
         if width > max-signal-width {
