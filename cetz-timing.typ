@@ -123,7 +123,7 @@
     // zick zack repetitions
     let rep = 4
     // zick zack amplitude
-    let amp = 0.2
+    let amp = 0.4
     // length of one zick zack repetition
     let rep_len = (x_end - pos.x) / rep
     // length of one zick zack element
