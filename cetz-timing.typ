@@ -1,4 +1,4 @@
-#import "@preview/cetz:0.3.1"
+  #import "@preview/cetz:0.3.2"
 
 /// Width used for transition between different signal levels.
 /// Value between 0.0 and 2.0
@@ -76,7 +76,7 @@
   line(trans_start, trans_endB)
 }
 
-#let pat = pattern(size: (2pt, 3pt))[
+#let pat = tiling(size: (2pt, 3pt))[
   #place(line(start: (0%, 100%), end: (100%, 0%), stroke: 0.5pt))
 ]
 
@@ -90,7 +90,7 @@
     rect(sig_startA, sig_endB, stroke: none, fill: pat)
   }
   else {
-    rect(sig_startA, sig_endB, stroke: none)
+    rect(sig_startA, sig_endB, stroke: none, fill: white.transparentize(40%))
   }
   line(sig_startA, sig_endA)
   line(sig_startB, sig_endB)
@@ -183,20 +183,28 @@
   // Capture timing character
   let state-timing-capture = 0
 
+  // Capture repeating timing character
+  let state-multi-capture = 1
+
   // Capture sub group
-  let state-group-capture = 1
+  let state-group-capture = 2
 
   // Capture repetition prefix
-  let state-rep-capture = 2
+  let state-rep-capture = 3
 
   // current state
   let state = state-timing-capture
 
+  // previously parsed timing character.
+  // 'none' if it was not a timing character.
+  let previous = none
+  let repeat = ("char": none, "rep": 0)
   for c in sequence {
     if state == state-timing-capture {
       if c == "{" {
         state = state-group-capture
         group = ""
+        previous = none
       }
       else if c == "}" {
         panic("Syntax error: Extra closed bracket. Recursion level: " + str(depth) + ", sequence: ", sequence)
@@ -204,15 +212,54 @@
       else if c not in timing-characters {
         state = state-rep-capture
         rep = c
+        previous = none
       }
       else {
-        parsed += c
-        if c != "|" {
-          num-ticks += 1
+        if c == previous {
+          state = state-multi-capture
+          // remove last character from parsed
+          // parsed = parsed.slice(0, parsed.len() - 1)
+          repeat = ("char": c, "rep": 2)
+        }
+        else {
+          parsed += c
+          if c != "|" {
+            num-ticks += 1
+          }
+          previous = c
+        }
+      }
+    }
+    else if state == state-multi-capture {
+      if c == "{" {
+        state = state-group-capture
+        group = ""
+        previous = none
+      }
+      else if c == "}" {
+        panic("Syntax error: Extra closed bracket. Recursion level: " + str(depth) + ", sequence: ", sequence)
+      }
+      else if c not in timing-characters {
+        state = state-rep-capture
+        rep = c
+        previous = none
+      }
+      else {
+        if c == previous {
+          repeat.rep += 1
+        }
+        else {
+          state = state-timing-capture
+          parsed += c
+          if c != "|" {
+            num-ticks += 1
+          }
+          previous = c
         }
       }
     }
     else if state == state-group-capture {
+      previous = none
       if c == "{" {
         nesting-level += 1
         group += c
@@ -242,6 +289,7 @@
       if c == "{" {
         state = state-group-capture
         group = ""
+        // keep previous
       }
       else if c == "}" {
         panic("Syntax error: Unexpected closed bracket")

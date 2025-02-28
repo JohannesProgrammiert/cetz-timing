@@ -9,5 +9,5 @@ keywords = ["CeTZ", "timing", "diagram", "engineering", "electronics", "spi", "u
 categories = ["visualization"]
 compiler = "0.12"
 exclude = ["manual.pdf", "manual.typ"]
-disciplines = ["engineering", "digital", "documentation", "technology", "hardware"]
+disciplines = ["engineering", "computer-science"]
 repository = "https://github.com/JohannesProgrammiert/cetz-timing"

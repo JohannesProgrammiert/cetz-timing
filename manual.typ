@@ -1,16 +1,13 @@
-#import "@preview/mantys:0.1.4": *
-#import "@preview/cetz:0.3.1"
+#import "@preview/mantys:1.0.1": *
+#import "@preview/cetz:0.3.2"
 #import "./cetz-timing.typ": texttiming, timingtable, wave, parse-sequence
 
 #let package = toml("typst.toml").package
 
-#show: mantys.with(
-  name: package.name,
-  title: package.name,
-  subtitle: package.description,
-  authors: package.authors,
-  version: package.version,
+#show: mantys(
+  ..toml("typst.toml"),
   date: datetime.today(),
+  subtitle: package.description,
 )
 
 #set table(
@@ -513,6 +510,7 @@ The used layout is shown in @timing-layout.
   ```typst
   #cetz.canvas({
     import cetz.draw: *
+    import cetz-timing: wave
 
     grid((0, 1), (10, -3), stroke: gray)
 
